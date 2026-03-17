@@ -432,12 +432,6 @@
   body.dark .hm-4 { background: #1a8fd8; }
 
   /* ── AUDIO BUTTON ── */
-  .btn-audio { background: none; border: none; cursor: pointer; font-size: 16px; padding: 2px 4px; transition: transform 0.15s; vertical-align: middle; line-height: 1; }
-  .btn-audio:hover { transform: scale(1.2); }
-  .btn-audio.speaking { animation: pulse-audio 0.6s ease infinite; }
-  @keyframes pulse-audio { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .flash-audio-btn { margin-top: 10px; background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 20px; padding: 6px 14px; font-size: 13px; cursor: pointer; font-family: inherit; }
-  .flash-audio-btn:hover { background: rgba(255,255,255,0.3); }
 
   /* ── QUIZ HISTORY ── */
   .quiz-history-wrap { max-width: 1040px; margin: 10px auto 0; padding: 0 16px; display: none; }
@@ -3021,7 +3015,7 @@ function openStudy() {
     const isWeak = weakWords.some(w => w.sl === v.sl && w.lessonId === l.id);
     const translation = currentLang === 'sr' && v.sr ? v.sr : v.en;
     html += `<div class="vocab-card${isWeak?' is-weak':''}" style="border-left-color:${l.accent}">
-      <div class="vocab-sl" style="color:${l.accent}">${v.sl} <button class="btn-audio" onclick="speakSl(event,'${v.sl.replace(/'/g,"\\'")}')" title="Listen">🔊</button></div>
+      <div class="vocab-sl" style="color:${l.accent}">${v.sl}</div>
       <div class="vocab-en">${translation}</div>
       <div class="vocab-ex">💬 ${v.ex}</div>
     </div>`;
@@ -3293,7 +3287,6 @@ function flipCard() {
       <div class="flash-lang-b">${langLabel}</div>
       <div class="flash-word-b">${translation}</div>
       <div class="flash-ex-b">💬 ${card.ex}</div>
-      <button class="flash-audio-btn" onclick="speakSl(event,'${card.sl.replace(/'/g,"\\'")}')">🔊 Listen</button>
     </div>`;
   document.getElementById('flash-actions').style.display = 'flex';
   // re-attach swipe on back card too
@@ -3554,27 +3547,7 @@ function startCrossQuiz(mode) {
 // ── NEW FEATURES ──────────────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════════
 
-// ── Audio Pronunciation (Web Speech API) ─────────────────────────────────
-function speakSl(e, text) {
-  if (e) e.stopPropagation();
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'sl-SI';
-  utter.rate = 0.9;
-  // fallback to any Slavic voice
-  const voices = window.speechSynthesis.getVoices();
-  const slVoice = voices.find(v => v.lang.startsWith('sl')) ||
-                  voices.find(v => v.lang.startsWith('hr')) ||
-                  voices.find(v => v.lang.startsWith('sr'));
-  if (slVoice) utter.voice = slVoice;
-  if (e && e.currentTarget) {
-    const btn = e.currentTarget;
-    btn.classList.add('speaking');
-    utter.onend = () => btn.classList.remove('speaking');
-  }
-  window.speechSynthesis.speak(utter);
-}
+
 
 // ── XP System ─────────────────────────────────────────────────────────────
 let xpData = { total: 0 };
@@ -4423,11 +4396,6 @@ function init() {
     updateStreakDisplay();
     renderHeatmap();
     renderQuizHistory();
-    // preload voices
-    if (window.speechSynthesis) {
-      window.speechSynthesis.getVoices();
-      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
-    }
   } catch(e) {
     document.getElementById('home-content').innerHTML = '<p style="padding:20px;color:red">Error: ' + e.message + '</p>';
   }
